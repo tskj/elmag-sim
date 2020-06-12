@@ -15,12 +15,15 @@ export const genField = (
   field: (x: R2) => R2,
   { lowerLeft, upperRight }: { lowerLeft: R2; upperRight: R2 }
 ): Field => {
-  const list = Array.from({ length: 10 }, (_, i) => i);
+  const width = upperRight.x - lowerLeft.x;
+  const xs = Array.from({ length: width }, (_, i) => i + lowerLeft.x);
+
+  const height = upperRight.y - lowerLeft.y;
+  const ys = Array.from({ length: height }, (_, i) => i + lowerLeft.y);
+
   return {
-    vectors: list
-      .flatMap((x) =>
-        list.map((y) => ({ pos: { x, y }, vec: field({ x, y }) }))
-      )
+    vectors: xs
+      .flatMap((x) => ys.map((y) => ({ pos: { x, y }, vec: field({ x, y }) })))
       .reduce(
         (acc, { pos, vec }) => ({ ...acc, [toGaussianCoord(pos)]: vec }),
         {}
