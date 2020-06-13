@@ -4,7 +4,7 @@ import {
   useIsDraggin,
   useEventListener,
 } from './event-listeners';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { State, Camera } from './sim';
 import { screenToWorldSpace } from './draw';
 
@@ -42,6 +42,23 @@ export const useZoom = (input: Input) => {
       [input]
     )
   );
+};
+
+export const useResizableView = (input: Input) => {
+  const onResize = useCallback(() => {
+    if (input.canvas) {
+      input.canvas.width = input.canvas.scrollWidth;
+      input.canvas.height = input.canvas.scrollHeight;
+      input.canvasSize = {
+        width: input.canvas.scrollWidth,
+        height: input.canvas.scrollHeight,
+      };
+    }
+  }, [input]);
+  useEventListener('resize', onResize);
+  useEffect(() => {
+    onResize();
+  }, [onResize]);
 };
 
 const clamp = (

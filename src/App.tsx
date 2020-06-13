@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { loop, initialState } from './sim';
-import { useDrag, useZoom } from './camera-controls';
+import { useDrag, useZoom, useResizableView } from './camera-controls';
 import { R2 } from './fields';
 import { Settings } from './Settings';
 
@@ -26,16 +26,10 @@ export const App = () => {
   React.useEffect(() => {
     const canvas: any = canvasRef.current;
     if (canvas) {
-      canvas.width = canvas.scrollWidth;
-      canvas.height = canvas.scrollHeight;
       input = {
         ...input,
         canvas,
         ctx: canvas.getContext('2d'),
-        canvasSize: {
-          width: canvas.scrollWidth,
-          height: canvas.scrollHeight,
-        },
       };
       start(loop(initialState));
       render();
@@ -44,6 +38,7 @@ export const App = () => {
 
   useDrag(input);
   useZoom(input);
+  useResizableView(input);
 
   return (
     <div className='App'>

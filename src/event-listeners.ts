@@ -5,8 +5,8 @@ export const useEventListener = (
   onEventTrigger: React.EventHandler<any>
 ) => {
   useEffect(() => {
-    document.addEventListener(eventType, onEventTrigger, false);
-    return () => document.removeEventListener(eventType, onEventTrigger, false);
+    window.addEventListener(eventType, onEventTrigger, false);
+    return () => window.removeEventListener(eventType, onEventTrigger, false);
   }, [eventType, onEventTrigger]);
 };
 
