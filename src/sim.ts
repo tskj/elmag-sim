@@ -15,7 +15,10 @@ export type State = {
   E: Field;
 };
 
-const myField = ({ x, y }: R2): R2 => ({ x: x / 20, y: y / 20 });
+const myField = ({ x, y }: R2): R2 => {
+  const length = Math.sqrt(x * x + y * y);
+  return { x: (2 * x) / (length * length), y: (2 * y) / (length * length) };
+};
 
 export const initialState: State = {
   camera: {

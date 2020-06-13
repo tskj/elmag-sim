@@ -15,6 +15,23 @@ const camToScreenSpace = (
   return w;
 };
 
+const softcap = (n: number): number => {
+  const a = 0.95;
+  const sign = Math.sign(n);
+  const x = Math.abs(n);
+  return sign * (0.5 * (x - a - Math.sqrt((x - a) * (x - a) + 4 - 4 * a)) + 1);
+};
+
+const smoothstep = (x: number): number => {
+  if (x <= 0) {
+    return 0;
+  }
+  if (x >= 1) {
+    return 1;
+  }
+  return 3 * x ** 2 - 2 * x ** 3;
+};
+
 const drawVector = (
   { canvasSize, ctx, vectorThickness }: Input,
   vec: R2,
@@ -27,11 +44,16 @@ const drawVector = (
     width: canvasSize.width,
     height: canvasSize.height,
   });
-  ctx.lineWidth = vectorThickness / cam.zoom;
+  const length = Math.sqrt(vec.x ** 2 + vec.y ** 2);
+  ctx.lineWidth =
+    (vectorThickness * (1 + 3 * smoothstep(0.5 * length - 0.5))) / cam.zoom;
   ctx.strokeStyle = color;
   ctx.beginPath();
   ctx.moveTo(project(at).x, project(at).y);
-  const to = { x: at.x + vec.x, y: at.y + vec.y };
+  const to = {
+    x: at.x + softcap(length) * (vec.x / length),
+    y: at.y + softcap(length) * (vec.y / length),
+  };
   ctx.lineTo(project(to).x, project(to).y);
   ctx.stroke();
 };
