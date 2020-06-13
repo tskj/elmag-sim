@@ -1,5 +1,5 @@
 import { Field, R2, genField } from './fields';
-import { input } from './App';
+import { input, Input } from './App';
 import { draw } from './draw';
 import { update } from './elmag';
 
@@ -46,6 +46,11 @@ export const loop = (state: State) => (t1: number = 0) => {
   const input = read();
   const newstate = update(input, state);
   draw(input, newstate);
+  zero(input);
 
   requestAnimationFrame(loop(newstate));
+};
+
+const zero = (input: Input): void => {
+  input.mouse.scrollSpeed = 0;
 };

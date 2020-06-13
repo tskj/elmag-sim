@@ -32,14 +32,47 @@ export const useDrag = (input: Input) => {
   );
 };
 
+export const useZoom = (input: Input) => {
+  useEventListener(
+    'wheel',
+    useCallback(
+      (wheel) => {
+        input.mouse.scrollSpeed = wheel.deltaY;
+      },
+      [input]
+    )
+  );
+};
+
+const clamp = (
+  n: number,
+  { lowerBound, upperBound }: { lowerBound?: number; upperBound?: number }
+) =>
+  lowerBound && n < lowerBound
+    ? lowerBound
+    : upperBound && n > upperBound
+    ? upperBound
+    : n;
+
 export const updateCamera = (
   { mouse, canvasSize }: Input,
   { camera }: State
 ): Camera => {
+  const project = screenToWorldSpace(camera, canvasSize);
+
+  if (mouse.scrollSpeed) {
+    return {
+      ...camera,
+      zoom: clamp(camera.zoom + mouse.scrollSpeed / 50, {
+        lowerBound: 10,
+      }),
+    };
+  }
+
   if (!mouse.dragStartPosition) {
     return { ...camera, moveStartPosition: undefined };
   }
-  const project = screenToWorldSpace(camera, canvasSize);
+
   const dragPosition = project(mouse.position);
   const dragOrigin = project(mouse.dragStartPosition);
   const dragDistance = {
