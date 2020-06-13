@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.css';
 import { loop, initialState } from './sim';
 
 export type Input = {
