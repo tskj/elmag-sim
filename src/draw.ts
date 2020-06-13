@@ -2,7 +2,7 @@ import { Camera, State } from './sim';
 import { R2, coordsInDomain, toGaussianCoord } from './fields';
 import { Input } from './App';
 
-const camToScreenSpace = (
+const worldToScreenSpace = (
   { position, zoom }: Camera,
   { width, height }: { width: number; height: number }
 ) => ({ x, y }: R2): R2 => {
@@ -10,9 +10,20 @@ const camToScreenSpace = (
   const scale = (z: number) => (z / zoom) * scaleFactor;
   const w = {
     x: scale(x) + width / 2 - scale(position.x),
-    y: -scale(y) + height / 2 - scale(position.y),
+    y: -scale(y) + height / 2 + scale(position.y),
   };
   return w;
+};
+export const screenToWorldSpace = (
+  { position, zoom }: Camera,
+  { width, height }: { width: number; height: number }
+) => ({ x, y }: R2): R2 => {
+  const scaleFactor = Math.max(width, height);
+  const scale = (z: number) => (z * zoom) / scaleFactor;
+  return {
+    x: scale(x) - scale(width / 2) + position.x,
+    y: -(scale(y) - scale(height / 2) + position.y),
+  };
 };
 
 const softcap = (n: number): number => {
@@ -40,7 +51,7 @@ const drawVector = (
   if (vec.x === 0 && vec.y === 0) {
     return;
   }
-  const project = camToScreenSpace(cam, {
+  const project = worldToScreenSpace(cam, {
     width: canvasSize.width,
     height: canvasSize.height,
   });
