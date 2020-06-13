@@ -4,12 +4,14 @@ import { loop, initialState } from './sim';
 
 export type Input = {
   ctx: CanvasRenderingContext2D;
-  size: { width: number; height: number };
+  canvasSize: { width: number; height: number };
+  vectorThickness: number;
 };
 
-export let input = {
+export let input: Input = {
   ctx: undefined as any,
-  size: { width: 0, height: 0 },
+  canvasSize: { width: 0, height: 0 },
+  vectorThickness: 20,
 };
 
 export const App = () => {
@@ -20,8 +22,9 @@ export const App = () => {
       canvas.width = canvas.scrollWidth;
       canvas.height = canvas.scrollHeight;
       input = {
+        ...input,
         ctx: canvas.getContext('2d'),
-        size: {
+        canvasSize: {
           width: canvas.scrollWidth,
           height: canvas.scrollHeight,
         },

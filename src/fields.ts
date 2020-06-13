@@ -1,7 +1,8 @@
 export type R2 = { x: number; y: number };
+export type Domain = { lowerLeft: R2; upperRight: R2 };
 export type Field = {
   vectors: Record<GaussianCoord, R2>;
-  domain: { lowerLeft: R2; upperRight: R2 };
+  domain: Domain;
 };
 
 type GaussianCoord = string;
@@ -11,23 +12,28 @@ export const fromGaussianCoord = (coord: GaussianCoord): R2 => {
   return { x, y };
 };
 
-export const genField = (
-  field: (x: R2) => R2,
-  { lowerLeft, upperRight }: { lowerLeft: R2; upperRight: R2 }
-): Field => {
+const cartesianProduct = <T>(xs: T[], ys: T[]) => <E>(
+  f: (x: T, y: T) => E
+): E[] => xs.flatMap((x) => ys.map((y) => f(x, y)));
+
+export const coordsInDomain = ({ lowerLeft, upperRight }: Domain): R2[] => {
   const width = upperRight.x - lowerLeft.x;
-  const xs = Array.from({ length: width }, (_, i) => i + lowerLeft.x);
+  const xs = Array.from({ length: width + 1 }, (_, i) => i + lowerLeft.x);
 
   const height = upperRight.y - lowerLeft.y;
-  const ys = Array.from({ length: height }, (_, i) => i + lowerLeft.y);
+  const ys = Array.from({ length: height + 1 }, (_, i) => i + lowerLeft.y);
 
+  return cartesianProduct(xs, ys)((x, y) => ({ x, y }));
+};
+
+export const genField = (field: (x: R2) => R2, domain: Domain): Field => {
   return {
-    vectors: xs
-      .flatMap((x) => ys.map((y) => ({ pos: { x, y }, vec: field({ x, y }) })))
+    vectors: coordsInDomain(domain)
+      .map((pos) => ({ pos, vec: field(pos) }))
       .reduce(
         (acc, { pos, vec }) => ({ ...acc, [toGaussianCoord(pos)]: vec }),
         {}
       ),
-    domain: { lowerLeft, upperRight },
+    domain,
   };
 };

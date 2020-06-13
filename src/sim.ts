@@ -1,4 +1,4 @@
-import { Field, R2, genField } from './fields';
+import { Field, R2, genField, coordsInDomain, toGaussianCoord } from './fields';
 import { input, Input } from './App';
 
 let t0 = 0;
@@ -13,15 +13,15 @@ type State = {
   E: Field;
 };
 
-const upField = ({ x, y }: R2): R2 => ({ x: 0, y: 1 });
-export const initialState = {
+const upField = ({ x, y }: R2): R2 => ({ x: 0, y: 0.8 });
+export const initialState: State = {
   camera: {
     position: { x: 0, y: 0 },
-    zoom: 10,
+    zoom: 20,
   },
   E: genField(upField, {
-    lowerLeft: { x: 0, y: 0 },
-    upperRight: { x: 10, y: 10 },
+    lowerLeft: { x: -5, y: -5 },
+    upperRight: { x: 5, y: 5 },
   }),
 };
 
@@ -50,12 +50,12 @@ const camToScreenSpace = (
   const scale = (z: number) => (z / zoom) * scaleFactor;
   const w = {
     x: scale(x) + width / 2 - scale(position.x),
-    y: scale(y) + height / 2 - scale(position.y),
+    y: -scale(y) + height / 2 - scale(position.y),
   };
   return w;
 };
 const drawVector = (
-  { size, ctx }: Input,
+  { canvasSize, ctx, vectorThickness }: Input,
   vec: R2,
   { at, cam, color = 'blue' }: { at: R2; cam: Camera; color?: string }
 ): void => {
@@ -63,10 +63,10 @@ const drawVector = (
     return;
   }
   const project = camToScreenSpace(cam, {
-    width: size.width,
-    height: size.height,
+    width: canvasSize.width,
+    height: canvasSize.height,
   });
-  ctx.lineWidth = 1 / cam.zoom;
+  ctx.lineWidth = vectorThickness / cam.zoom;
   ctx.strokeStyle = color;
   ctx.beginPath();
   ctx.moveTo(project(at).x, project(at).y);
@@ -74,10 +74,25 @@ const drawVector = (
   ctx.lineTo(project(to).x, project(to).y);
   ctx.stroke();
 };
+const isInView = (cam: Camera) => (vec: R2) => {
+  return (
+    Math.abs(cam.position.x - vec.x) <= cam.zoom &&
+    Math.abs(cam.position.y - vec.y) <= cam.zoom
+  );
+};
 const draw = (input: Input, state: State): void => {
+  input.ctx.clearRect(0, 0, input.canvasSize.width, input.canvasSize.height);
+  coordsInDomain(state.E.domain)
+    .filter(isInView(state.camera))
+    .forEach((coord) => {
+      drawVector(input, state.E.vectors[toGaussianCoord(coord)], {
+        at: coord,
+        cam: state.camera,
+      });
+    });
   drawVector(
     input,
-    { x: 1, y: 1 },
+    { x: Math.cos(Date.now() / 1000), y: Math.sin(Date.now() / 1000) },
     {
       at: { x: 0, y: 0 },
       cam: state.camera,
