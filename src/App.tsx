@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { loop, initialState } from './sim';
 import { useDrag, useZoom } from './camera-controls';
 import { R2 } from './fields';
+import { Settings } from './Settings';
 
 export type Input = {
   canvas: HTMLCanvasElement;
@@ -47,6 +48,7 @@ export const App = () => {
   return (
     <div className='App'>
       <canvas id='canvas' ref={canvasRef} />
+      <Settings input={input} />
     </div>
   );
 };
